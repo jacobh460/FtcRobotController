@@ -39,7 +39,7 @@ public class SpinTake {
 
     public void SetAngularVelocityDeg(double Velocity){
         this.SetAngularVelocity(
-                Math.toDegrees(Velocity)
+                Math.toRadians(Velocity)
         );
     }
 
