@@ -14,8 +14,6 @@ public class base_chassis_test extends LinearOpMode {
     DcMotorEx frontRight;
     DcMotorEx backRight;
 
-    final double wheelDistMiddle = 6.5; //inches
-
 
 
 
