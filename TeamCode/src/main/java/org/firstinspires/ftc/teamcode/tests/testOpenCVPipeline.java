@@ -14,7 +14,7 @@ public class testOpenCVPipeline extends OpenCvPipeline {
 
     public int zoneIndex = 0;
 
-
+    double scaleFactor = 1;
     Rect[] rects;
     testOpenCVPipeline(Rect[] rects){
         this.rects = rects;
@@ -24,6 +24,7 @@ public class testOpenCVPipeline extends OpenCvPipeline {
     {
         int closestIndex = 0;
         long closestVal = Long.MAX_VALUE;
+
 
         Double[] targetColor = new Double[]{0.0, 0.0, 255.0};
 
