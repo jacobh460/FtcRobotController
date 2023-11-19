@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 
-@TeleOp
+@TeleOp(group="test")
 public class base_chassis_test extends LinearOpMode {
 
     DcMotorEx frontLeft;

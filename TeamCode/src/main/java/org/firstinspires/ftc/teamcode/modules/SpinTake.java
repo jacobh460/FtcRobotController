@@ -12,38 +12,39 @@ public class SpinTake {
     private double resolution = 537.7;
     private double ticksPerRad = resolution/(Math.PI*2);
     public SpinTake(HardwareMap hardwareMap, String motorName){
-        intake = hardwareMap.get(DcMotorEx.class, motorName);
-        intake.setPower(0);
-        intake.setMotorDisable(); //so we can freely spin it by hand if we need during initialization
+        this.intake = hardwareMap.get(DcMotorEx.class, motorName);
+        this.intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.intake.setPower(0);
+        this.intake.setMotorDisable(); //so we can freely spin it by hand if we need during initialization
     }
 
-    /**
-     * energize motor - must run this after initialization
-     */
-    public void Enable(){
-        intake.setMotorEnable();
-        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);//reset current rotation to 0
+    public SpinTake(HardwareMap hardwareMap){
+        this(hardwareMap, "spinTake");
     }
 
-    /**
-     * @param Velocity angular velocity in radians/s
-     */
-    public void SetAngularVelocity(double Velocity){
+
+    public DcMotor.RunMode getMode(){
+        return this.intake.getMode();
+    }
+    public void setVelocity(double velo){
+        double tickVelo = velo/360.0 * resolution;
+        this.intake.setVelocity(tickVelo);
+    }
+
+    public void runAtVelo(double velo){
+        this.setVelocity(velo);
         this.intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        this.intake.setVelocity(Velocity * ticksPerRad);
     }
 
-    /**
-     * @param Velocity angular velocity in degrees/s
-     */
-
-    public void SetAngularVelocityDeg(double Velocity){
-        this.SetAngularVelocity(
-                Math.toRadians(Velocity)
-        );
+    public double getAngle(){
+        return (this.intake.getCurrentPosition()/this.resolution * 360.0);
     }
 
-
-    //todo: create a method which allows the spintake to point away from or "avoid" a specific rotation, which runs using RunMode.RUN_TO_POSITION (making room for the hand to pick stuff up)
+    public void goToAngle(double angle, double velo){
+        int ticks = (int)(angle/360.0 * this.resolution);
+        this.intake.setTargetPosition(ticks);
+        this.setVelocity(velo);
+        this.intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
 
 }

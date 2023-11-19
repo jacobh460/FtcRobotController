@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-@TeleOp(name="test_drive", group="Linear OpMode")
+@TeleOp(name="test_drive", group="test")
 
 public class test_motor extends LinearOpMode {
 

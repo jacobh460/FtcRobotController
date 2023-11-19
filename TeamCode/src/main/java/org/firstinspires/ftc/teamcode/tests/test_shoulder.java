@@ -1,25 +1,21 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
-
 @TeleOp(group="test")
-public class servoTest extends LinearOpMode {
+public class test_shoulder extends LinearOpMode {
 
     @Override
     public void runOpMode(){
-        Servo servo = hardwareMap.get(Servo.class, "testServo");
+        Servo shoulder = hardwareMap.get(Servo.class, "shoulder");
 
         waitForStart();
 
-        servo.setPosition(0.5);
-
         while (opModeIsActive()){
-            sleep(5);
+            shoulder.setPosition(Math.max(gamepad1.left_stick_y, 0));
         }
-
-        return;
     }
 }

@@ -6,13 +6,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp
+@TeleOp(group="test")
 public class test_spintake extends LinearOpMode {
 
     DcMotorEx motor;
 
 
-    double interval = 10.0;
+    double interval = 50.0;
 
     final double resolution = 145.1;
 
