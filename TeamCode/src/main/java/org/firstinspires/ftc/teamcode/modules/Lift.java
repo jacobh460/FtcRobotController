@@ -12,7 +12,7 @@ public class Lift{
 
     private int targetPosition = 0;
 
-    public final double speed = 800.0;//target speed ticks/s
+    public final double speed = 1000.0;//target speed ticks/s
 
     private int maxPosition = 2000; //max motor ticks
 

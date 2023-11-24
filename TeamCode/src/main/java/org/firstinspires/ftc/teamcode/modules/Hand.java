@@ -18,7 +18,7 @@ public class Hand {
 
     //opens hand
     public void open(){
-        this.handServo.setPosition(0.6);
+        this.handServo.setPosition(0.5);
     }
 
     //closes hand

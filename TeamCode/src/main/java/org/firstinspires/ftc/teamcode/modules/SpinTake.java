@@ -8,8 +8,7 @@ public class SpinTake {
 
     private DcMotorEx intake = null;
 
-    //assuming Yellow Jacket 5203-2402-0019 Planetary Gear Motor
-    private double resolution = 537.7;
+    private double resolution = 145.1;
     private double ticksPerRad = resolution/(Math.PI*2);
     public SpinTake(HardwareMap hardwareMap, String motorName){
         this.intake = hardwareMap.get(DcMotorEx.class, motorName);
@@ -22,6 +21,18 @@ public class SpinTake {
         this(hardwareMap, "spinTake");
     }
 
+
+    public void enable(){
+        this.intake.setMotorEnable();
+    }
+
+    public void disable(){
+        this.intake.setMotorDisable();
+    }
+
+    public boolean isEnabled(){
+        return this.intake.isMotorEnabled();
+    }
 
     public DcMotor.RunMode getMode(){
         return this.intake.getMode();

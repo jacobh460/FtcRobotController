@@ -30,9 +30,13 @@ public class drivermode extends LinearOpMode {
     private final double wristManualSpeed = 0.35;
     private final double shoulderManualSpeed = 0.35;
 
+    double shoulderOffset = 0.086666666666 - 0.275555555;
+
     private final double spintakeIdleAngle = 100.0;
 
     private double spinTarget = 0;
+
+    private boolean disableSpintake = false;
 
     @Override
     public void runOpMode(){
@@ -57,8 +61,7 @@ public class drivermode extends LinearOpMode {
 
 
         waitForStart();
-        this.shoulder.setPosition(0.36);
-        this.wrist.setPosition(0.67);
+        passthroughPreset();
 
         //reset lift encoders and energize lift motors
         this.lift.reset();
@@ -76,7 +79,7 @@ public class drivermode extends LinearOpMode {
 
             telemetry.addData("Lift Height Target (ticks)", this.lift.getTargetPosition());
             telemetry.addData("Wrist Servo", this.wrist.getPosition());
-            telemetry.addData("Shoulder Servo", this.shoulder.getPosition());
+            telemetry.addData("Shoulder Servo", this.shoulder.getPosition() - this.shoulderOffset);
             telemetry.addData("Hand Servo", this.hand.getPosition());
             telemetry.addData("Spintake Angle", this.spinTake.getAngle());
             telemetry.update();
@@ -87,21 +90,41 @@ public class drivermode extends LinearOpMode {
 
     //handle gamepad1 input
     private void gamepad1Control(double deltaTime){
+        /*
+        {
+            if (this.gamepad1.right_trigger > 0.02 || this.gamepad1.left_trigger > 0.02){
+                if (!this.spinTake.isEnabled()) this.spinTake.enable();
+                this.spinTake.runAtVelo(500.0 * (this.gamepad1.right_trigger - this.gamepad1.left_trigger));
+            }
+            else{
+                this.spinTake.disable();
+            }
+
+        }*/
 
         {
             if (this.gamepad1.right_trigger > 0.02 || this.gamepad1.left_trigger > 0.02){
-                this.spinTake.runAtVelo(500.0 /*speed*/ * (this.gamepad1.right_trigger - this.gamepad1.left_trigger));
+                this.disableSpintake = false;
+                this.spinTake.enable();
+                this.spinTake.runAtVelo(1000.0 * (this.gamepad1.right_trigger - this.gamepad1.left_trigger));
+
             }
-            else if (this.spinTake.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
-                double currentPosition = this.spinTake.getAngle();
-                this.spinTarget = (double)(((int)currentPosition/(int)360) + 1) * 360.0 + spintakeIdleAngle;
-                this.spinTake.goToAngle(spinTarget, 100.0);
+            else if (this.spinTake.getMode() != DcMotor.RunMode.RUN_TO_POSITION && this.spinTake.isEnabled() && !this.disableSpintake){
+                double curAngle = this.spinTake.getAngle();
+                this.spinTarget = Math.floor(curAngle/120.0) * 120.0;
+                this.spinTake.goToAngle(this.spinTarget, 800.0);
             }
             else{
-                this.spinTake.goToAngle(spinTarget, 100.0);
+                if (Math.abs(this.spinTake.getAngle()) - this.spinTarget  < 5.0){
+                    this.disableSpintake = true;
+                    this.spinTake.disable();
+                }
+                if (!this.disableSpintake)
+                    this.spinTake.goToAngle(this.spinTarget, 800.0);
             }
-            telemetry.addData("spintake target", spinTarget);
-            telemetry.addData("Run To Position", this.spinTake.getMode() == DcMotor.RunMode.RUN_TO_POSITION);
+            telemetry.addData("Spintake Target Angle", this.spinTarget);
+
+
         }
 
 
@@ -160,30 +183,27 @@ public class drivermode extends LinearOpMode {
         {
             //position A (pick up pixel from passthrough)
             if (gamepad2.a){
-                lift.setTargetPosition(0);
-                wrist.setPosition(0.64944444444444);
-                shoulder.setPosition(0.285);
+                passthroughPreset();
             }
 
 
             //position B (drop off pixel)
-            else if (gamepad2.b) {
-                lift.setTargetPosition(655);
-                wrist.setPosition(0.1427777777777);
-                shoulder.setPosition(0.719444444444);
+            else if (gamepad2.x) {
+                dropOffPreset();
             }
 
 
-            //position Y (pick up pixel in back)
+            //position Y (above pick up zone)
+            else if (gamepad2.b)
+            {
+                floatingPickupPreset();
+            }
 
 
             //position X (traveling)
-            else if (gamepad2.x){
-                lift.setTargetPosition(0);
-                wrist.setPosition(0.4177777777);
-                shoulder.setPosition(0.3988888888);
+            else if (gamepad2.y) {
+                travelingPreset();
             }
-
         }
 
         //manual shoulder/wrist control
@@ -199,5 +219,34 @@ public class drivermode extends LinearOpMode {
         }
 
 
+    }
+    private void travelingPreset(){
+        lift.setTargetPosition(0);
+        wrist.setPosition(0.356);
+        shoulder.setPosition(0.3649999 + shoulderOffset);
+    }
+    private void floatingPickupPreset(){
+        lift.setTargetPosition(0);
+        wrist.setPosition(0.66833333);
+        shoulder.setPosition(0.3988888888 + shoulderOffset);
+    }
+
+    private void dropOffPreset(){
+        lift.setTargetPosition(655);
+        wrist.setPosition(0);
+        shoulder.setPosition(0.719444444444 + shoulderOffset);
+    }
+
+
+    private void passthroughPreset(){
+        /*
+        lift.setTargetPosition(0);
+        wrist.setPosition(0.685);
+        shoulder.setPosition(0.27111 + shoulderOffset);
+        */
+        hand.open();
+        lift.setTargetPosition(0);
+        wrist.setPosition(0.64944444444444);
+        shoulder.setPosition(0.2588888 + shoulderOffset);
     }
 }
