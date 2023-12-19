@@ -37,13 +37,13 @@ public class SpinTake {
     public DcMotor.RunMode getMode(){
         return this.intake.getMode();
     }
-    public void setVelocity(double velo){
-        double tickVelo = velo/360.0 * resolution;
+    public void setVelocity(double rpm){
+        double tickVelo = rpm/60.0 * resolution;
         this.intake.setVelocity(tickVelo);
     }
 
-    public void runAtVelo(double velo){
-        this.setVelocity(velo);
+    public void runAtVelo(double rpm){
+        this.setVelocity(rpm);
         this.intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 

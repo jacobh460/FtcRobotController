@@ -12,16 +12,16 @@ public class test_spintake extends LinearOpMode {
     DcMotorEx motor;
 
 
-    double interval = 50.0;
+    double interval = 50.0;//change in rpm when user presses a button
 
     final double resolution = 145.1;
 
     @Override
     public void runOpMode(){
-        motor = hardwareMap.get(DcMotorEx.class, "motor0");
+        motor = hardwareMap.get(DcMotorEx.class, "spinTake");
         telemetry.setMsTransmissionInterval(50);
 
-        double speed = 100;
+        double rpm = 100;
 
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -43,18 +43,17 @@ public class test_spintake extends LinearOpMode {
 
         while (opModeIsActive()){
             double velo = motor.getVelocity();
-            telemetry.addData("Target Velocity (deg/s)", speed);
-            telemetry.addData("Real Velocity (deg/s)", velo/resolution*360);
+            telemetry.addData("Target Rpm", rpm);
             telemetry.addData("Real RPM", velo/resolution*60);
             telemetry.update();
 
-            if (gamepad1.dpad_up && !lu) speed += interval;
-            if (gamepad1.dpad_down && !ll) speed -= interval;
+            if (gamepad1.dpad_up && !lu) rpm += interval;
+            if (gamepad1.dpad_down && !ll) rpm -= interval;
 
             lu = gamepad1.dpad_up;
             ll = gamepad1.dpad_down;
 
-            double tick_speed = speed/360 * resolution;
+            double tick_speed = rpm / 60.0 * resolution;
 
             motor.setVelocity(gamepad1.right_bumper ? tick_speed : (gamepad1.left_bumper ? -tick_speed : 0));
 

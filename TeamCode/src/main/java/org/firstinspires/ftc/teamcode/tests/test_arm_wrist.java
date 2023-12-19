@@ -18,18 +18,24 @@ public class test_arm_wrist extends LinearOpMode {
         wrist = hardwareMap.get(Servo.class, "wrist");
 
 
-        shoulder.scaleRange(0, .2);
-        wrist.scaleRange(0, 1.0);
+        shoulder.setPosition(0.5);
+        wrist.setPosition(0.5);
 
         waitForStart();
 
+        double lastTime = getRuntime();
         while (opModeIsActive()){
+            double newTime = getRuntime();
+            double deltaTime = newTime - lastTime;
+            lastTime = newTime;
 
-            double shoulderServoPos = Math.max(0, (gamepad1.left_stick_y+1)/2);
-            double wristServoPos = Math.max(0, (gamepad1.right_stick_y+1)/2);
 
-            shoulder.setPosition(shoulderServoPos);
-            wrist.setPosition(wristServoPos);
+            shoulder.setPosition(shoulder.getPosition() - gamepad1.left_stick_y * deltaTime * 0.2);
+            wrist.setPosition(wrist.getPosition() - gamepad1.right_stick_y * deltaTime * 0.2);
+
+            telemetry.addData("Shoulder Position", shoulder.getPosition());
+            telemetry.addData("Wrist Position", wrist.getPosition());
+            telemetry.update();
         }
 
     }
