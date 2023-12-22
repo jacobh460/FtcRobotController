@@ -10,24 +10,26 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.modules.Hand;
-import org.firstinspires.ftc.teamcode.modules.Lift;
+import org.firstinspires.ftc.teamcode.modules.ManipulatorController;
 import org.firstinspires.ftc.teamcode.modules.SpinTake;
+
 @TeleOp(group="competition")
 public class drivermode extends LinearOpMode {
 
-    Lift lift;
 
     Hand hand;
 
-    Servo shoulder;
-    Servo wrist;
     SpinTake spinTake;
 
     SampleMecanumDrive drive;
 
+    ManipulatorController manipulator;
+
     private final double handManualSpeed = 0.35;
     private final double wristManualSpeed = 0.35;
     private final double shoulderManualSpeed = 0.35;
+
+    private final double MAX_SLEW = 2.0;
 
 
     private final double spintakeIdleAngle = 100.0;
@@ -38,15 +40,17 @@ public class drivermode extends LinearOpMode {
 
     Servo launcher;
 
+
+    private Pose2d lastInputRaw = new Pose2d(0, 0, 0);
+
     @Override
     public void runOpMode(){
-        this.lift = new Lift(this.hardwareMap);
+
         this.hand = new Hand(this.hardwareMap);
         this.spinTake = new SpinTake(this.hardwareMap);
 
+        this.manipulator = new ManipulatorController(this.hardwareMap);
 
-        this.shoulder = hardwareMap.get(Servo.class, "shoulder");
-        this.wrist = hardwareMap.get(Servo.class, "wrist");
 
         this.launcher = hardwareMap.get(Servo.class, "launcher");
         this.launcher.setPosition(0.5);
@@ -60,13 +64,16 @@ public class drivermode extends LinearOpMode {
 
 
 
-        waitForStart();
-        this.travelingPreset();
-
         //reset lift encoders and energize lift motors
-        this.lift.reset();
-        this.lift.enable();
+        this.manipulator.lift.reset();
+        this.manipulator.lift.enable();
 
+        this.manipulator.travelingPreset();
+
+
+        telemetry.addLine("Ready to Start");
+        telemetry.update();
+        waitForStart();
 
         double lastTime = getRuntime();
         while (opModeIsActive()){
@@ -77,38 +84,25 @@ public class drivermode extends LinearOpMode {
             this.gamepad1Control(deltaTime);
             this.gamepad2Control(deltaTime);
 
-            telemetry.addData("Lift Height Target (ticks)", this.lift.getTargetPosition());
-            telemetry.addData("Wrist Servo", this.wrist.getPosition());
-            telemetry.addData("Shoulder Servo", this.shoulder.getPosition());
+            telemetry.addData("Lift Height Target (ticks)", this.manipulator.lift.getTargetPosition());
+            telemetry.addData("Wrist Servo", this.manipulator.wrist.getPosition());
+            telemetry.addData("Shoulder Servo", this.manipulator.shoulder.getPosition());
             telemetry.addData("Hand Servo", this.hand.getPosition());
             telemetry.addData("Spintake Angle", this.spinTake.getAngle());
             telemetry.addData("Heading", Math.toDegrees(this.drive.getPoseEstimate().getHeading()));
             telemetry.addData("Stored Heading", Math.toDegrees(PoseStorage.savedPosition.getHeading()));
             telemetry.update();
         }
-
-
     }
 
     //handle gamepad1 input
     private void gamepad1Control(double deltaTime){
-        /*
-        {
-            if (this.gamepad1.right_trigger > 0.02 || this.gamepad1.left_trigger > 0.02){
-                if (!this.spinTake.isEnabled()) this.spinTake.enable();
-                this.spinTake.runAtVelo(500.0 * (this.gamepad1.right_trigger - this.gamepad1.left_trigger));
-            }
-            else{
-                this.spinTake.disable();
-            }
-
-        }*/
 
         //press both triggers in to reset pose
         if (this.gamepad1.left_stick_button && this.gamepad1.right_stick_button) this.resetPose();
 
         {
-            if (this.gamepad1.right_trigger > 0.02){
+            if (this.gamepad1.right_trigger > 0.01){
                 this.disableSpintake = false;
                 this.spinTake.enable();
                 this.spinTake.runAtVelo(700.0);//run at this rpm
@@ -133,28 +127,27 @@ public class drivermode extends LinearOpMode {
                     this.spinTake.goToAngle(this.spinTarget, 500.0);
             }
             telemetry.addData("Spintake Target Angle", this.spinTarget);
-
-
         }
 
 
         {
+            //slew rate dampening
+            double maxChange = MAX_SLEW * deltaTime;
+
             Pose2d poseEstimate = this.drive.getPoseEstimate();
 
-            // Create a vector from the gamepad x/y inputs
-            // Then, rotate that vector by the inverse of that heading
             Vector2d input = new Vector2d(
-                    -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x
+                    Math.min(Math.max(-gamepad1.left_stick_y, Math.max(lastInputRaw.getY() - maxChange, -1.0)), Math.min(lastInputRaw.getY() + maxChange, 1.0)),
+                    Math.min(Math.max(-gamepad1.left_stick_x, Math.max(lastInputRaw.getX() - maxChange, -1.0)), Math.min(lastInputRaw.getX() + maxChange, 1.0))
             ).rotated(-poseEstimate.getHeading());
 
-            // Pass in the rotated input + right stick value for rotation
-            // Rotation is not part of the rotated input thus must be passed in separately
+            double yawPower = Math.min(Math.max(-gamepad1.right_stick_x, lastInputRaw.getHeading() - maxChange), lastInputRaw.getHeading() + maxChange);
+
             this.drive.setWeightedDrivePower(
                     new Pose2d(
                             input.getX(),
                             input.getY(),
-                            -gamepad1.right_stick_x
+                            yawPower
                     )
             );
 
@@ -163,7 +156,7 @@ public class drivermode extends LinearOpMode {
 
             telemetry.addData("heading", Math.toDegrees(poseEstimate.getHeading()));
 
-
+            lastInputRaw = new Pose2d(input, yawPower);
         }
 
         this.launcher.setPosition(gamepad1.right_bumper ? 0.45 : 0.5);
@@ -175,9 +168,9 @@ public class drivermode extends LinearOpMode {
 
         //adjusting lift height at constant speed with dpad up/down
         {
-            int targetPosition = this.lift.getTargetPosition();
-            int deltaX = (int)(this.lift.speed * deltaTime);
-            this.lift.setTargetPosition(targetPosition + (this.gamepad2.dpad_up ? deltaX : 0) - (this.gamepad2.dpad_down ? deltaX : 0));
+            double targetLength = this.manipulator.lift.getTargetLength();
+            int deltaX = (int)(this.manipulator.lift.speed * deltaTime);
+            this.manipulator.lift.setTargetLength(targetLength + (this.gamepad2.dpad_up ? deltaX : 0) - (this.gamepad2.dpad_down ? deltaX : 0));
         }
 
         //hand control w/bumpers
@@ -195,73 +188,29 @@ public class drivermode extends LinearOpMode {
 
         //preset positions
         {
-            //position A (pick up pixel from passthrough)
-            if (gamepad2.a){
-                pickupPreset();
-            }
+            Boolean[] buttons = {this.gamepad2.a, this.gamepad2.x, this.gamepad2.b, this.gamepad2.y};
+            Runnable[] presets = {manipulator::pickupPreset, manipulator::dropOffPreset, manipulator::floatingPickupPreset, manipulator::travelingPreset};
 
-
-            //position B (drop off pixel)
-            else if (gamepad2.x) {
-                dropOffPreset();
-            }
-
-
-            //position Y (above pick up zone)
-            else if (gamepad2.b)
-            {
-                floatingPickupPreset();
-            }
-
-
-            //position X (traveling)
-            else if (gamepad2.y) {
-                travelingPreset();
+            for (int i = 0; i < buttons.length; ++i){
+                if (!buttons[i]) continue;
+                presets[i].run();
+                break;
             }
         }
 
         //manual shoulder/wrist control
         {
-            double newWristPos = this.wrist.getPosition() - this.gamepad2.left_stick_y * this.wristManualSpeed * deltaTime;
-            double newShoulderPos = this.shoulder.getPosition() - this.gamepad2.right_stick_y * this.shoulderManualSpeed * deltaTime;
+            double newWristPos = this.manipulator.wrist.getPosition() - this.gamepad2.left_stick_y * this.wristManualSpeed * deltaTime;
+            double newShoulderPos = this.manipulator.shoulder.getPosition() - this.gamepad2.right_stick_y * this.shoulderManualSpeed * deltaTime;
 
             newWristPos = Math.min(Math.max(0, newWristPos), 1);
             newShoulderPos = Math.min(Math.max(0, newShoulderPos), 1);
 
-            this.shoulder.setPosition(newShoulderPos);
-            this.wrist.setPosition(newWristPos);
+            this.manipulator.shoulder.setPosition(newShoulderPos);
+            this.manipulator.wrist.setPosition(newWristPos);
         }
 
 
-    }
-    private void travelingPreset(){
-        lift.setTargetPosition(0);
-        wrist.setPosition(0.4416666);
-        shoulder.setPosition(0.1288888);
-    }
-    private void floatingPickupPreset(){
-        lift.setTargetPosition(0);
-        wrist.setPosition(0.16111111111);
-        shoulder.setPosition(0.3083333333);
-    }
-
-    private void dropOffPreset(){
-        lift.setTargetPosition(1150);
-        wrist.setPosition(0.81944444);
-        shoulder.setPosition(0.514444);
-    }
-
-
-    private void pickupPreset(){
-        /*
-        lift.setTargetPosition(0);
-        wrist.setPosition(0.685);
-        shoulder.setPosition(0.27111 + shoulderOffset);
-        */
-        hand.open();
-        lift.setTargetPosition(0);
-        wrist.setPosition(0.222777777);
-        shoulder.setPosition(0.023888888);
     }
 
     private void resetPose(){

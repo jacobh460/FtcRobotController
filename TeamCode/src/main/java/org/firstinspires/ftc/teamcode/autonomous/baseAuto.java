@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.modules.Hand;
 import org.firstinspires.ftc.teamcode.modules.Lift;
+import org.firstinspires.ftc.teamcode.modules.ManipulatorController;
 import org.firstinspires.ftc.teamcode.modules.SpinTake;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
@@ -14,23 +15,15 @@ public abstract class baseAuto extends LinearOpMode {
     int markerPosition = -1;
     SampleMecanumDrive drive;
     SpinTake spinTake;
-
-    Servo wrist;
-    Servo shoulder;
-
-    Lift lift;
-
-    Hand hand;
+    ManipulatorController manipulator;
 
     @Override
     public void runOpMode(){
         this.drive = new SampleMecanumDrive(this.hardwareMap);
         this.spinTake = new SpinTake(this.hardwareMap);
-        this.lift = new Lift(this.hardwareMap);
-        this.hand = new Hand(this.hardwareMap);
 
-        this.shoulder = hardwareMap.get(Servo.class, "shoulder");
-        this.wrist = hardwareMap.get(Servo.class, "wrist");
+
+        this.manipulator = new ManipulatorController(this.hardwareMap);
 
 
 
@@ -38,53 +31,27 @@ public abstract class baseAuto extends LinearOpMode {
         this.drive.followTrajectorySequenceAsync(sequence);
 
 
+        telemetry.addLine("Ready to Start");
+        telemetry.update();
         waitForStart();
         if (isStopRequested()) return;
         double lastTime = getRuntime();
-        while(opModeIsActive()){
+        while(opModeIsActive() && this.drive.isBusy()){
             double newTime = getRuntime();
             double deltaTime = newTime - lastTime;
             lastTime = newTime;
 
             this.drive.update();
-
         }
 
         this.end();
     }
 
+    //called after init, must return a TrajectorySequence
     abstract public TrajectorySequence createTrajectory();
+
+
+    //called after the trajectory has ended or autonomous has been stopped
     abstract public void end();
-
-
-    void travelingPreset(){
-        lift.setTargetPosition(0);
-        wrist.setPosition(0.4416666);
-        shoulder.setPosition(0.1288888);
-    }
-    void floatingPickupPreset(){
-        lift.setTargetPosition(0);
-        wrist.setPosition(0.16111111111);
-        shoulder.setPosition(0.3083333333);
-    }
-
-    void dropOffPreset(){
-        lift.setTargetPosition(700);
-        wrist.setPosition(0.81944444);
-        shoulder.setPosition(0.514444);
-    }
-
-
-    void pickupPreset(){
-        /*
-        lift.setTargetPosition(0);
-        wrist.setPosition(0.685);
-        shoulder.setPosition(0.27111 + shoulderOffset);
-        */
-        hand.open();
-        lift.setTargetPosition(0);
-        wrist.setPosition(0.222777777);
-        shoulder.setPosition(0.023888888);
-    }
 
 }
