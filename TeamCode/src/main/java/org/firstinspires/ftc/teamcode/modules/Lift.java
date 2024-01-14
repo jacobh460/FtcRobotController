@@ -5,24 +5,23 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-
 public class Lift{
 
     private DcMotorEx leftLift;
     private DcMotorEx rightLift;
 
-    private int targetPosition = 0; //this is in radians
+    private double targetLength = 0; //this is in inches
 
     public final double speed = 12.0;//target speed inches/second
 
-    private final double maxLength = 30.0; //max length the lift can extend, inches
+    public static final double maxLength = 23; //max length the lift can extend, inches
 
+    public static final double minLength = (5.0 + 3.0/8.0)/Math.sin(Math.toRadians(122.3));
     private final double spoolDiameter = 1.40358268;//inches
 
     private final double spoolCircumference = this.spoolDiameter * Math.PI;
 
-    private final double resolution = 384.5; //TODO: MAKE SURE THIS VALUE IS CORRECT
+    private final double resolution = 384.5;
 
 
     public Lift(HardwareMap hardwareMap, String leftLiftName, String rightLiftName){
@@ -64,23 +63,19 @@ public class Lift{
         this.rightLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
-    //returns target position in encoder ticks
-    public int getTargetPosition(){
-        return this.targetPosition;
-    }
-
     //returns target length of lift in inches
-    public double getTargetLength() { return this.targetPosition / this.resolution * this.spoolCircumference; }
+    public double getTargetLength() { return this.targetLength; }
 
 
     private void updateTarget(double targetLength){
-        this.targetPosition = (int)(targetLength / this.spoolCircumference * this.resolution);
-        this.leftLift.setTargetPosition(this.targetPosition);
-        this.rightLift.setTargetPosition(this.targetPosition);
+        this.targetLength = targetLength;
+        int targetPosition = (int)((targetLength - Lift.minLength) / this.spoolCircumference * this.resolution);
+        this.leftLift.setTargetPosition(targetPosition);
+        this.rightLift.setTargetPosition(targetPosition);
     }
 
     public void setTargetLength(double targetLength){
-        targetLength = Math.min(Math.max(0, targetLength), this.maxLength);
+        targetLength = Math.min(Math.max(Lift.minLength, targetLength), Lift.maxLength);
         this.updateTarget(targetLength);
 
         this.setSpeed(this.speed); //default speed maybe change later

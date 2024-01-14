@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.modules;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 public class SpinTake {
 
@@ -15,6 +16,14 @@ public class SpinTake {
         this.intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.intake.setPower(0);
         this.intake.setMotorDisable(); //so we can freely spin it by hand if we need during initialization
+
+        PIDFCoefficients coef1 = this.intake.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        coef1.i = 0.0;
+        this.intake.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, coef1);
+
+        PIDFCoefficients coef2 = this.intake.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+        coef2.i = 0.0;
+        this.intake.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, coef2);
     }
 
     public SpinTake(HardwareMap hardwareMap){
