@@ -78,7 +78,10 @@ public class SampleMecanumDrive extends MecanumDrive {
     private List<Integer> lastEncPositions = new ArrayList<>();
     private List<Integer> lastEncVels = new ArrayList<>();
 
-    public SampleMecanumDrive(HardwareMap hardwareMap) {
+    public SampleMecanumDrive(HardwareMap hardwareMap){
+        this(hardwareMap, true);
+    }
+    public SampleMecanumDrive(HardwareMap hardwareMap, boolean AutoBulkCache) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
@@ -88,9 +91,13 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+
+        if (AutoBulkCache){
+            for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+                module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+            }
         }
+
 
         // TODO: adjust the names of the following hardware devices to match your configuration
 

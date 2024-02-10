@@ -11,7 +11,7 @@ public class Wrist {
 
     private double wristServoRange = 300.0;
 
-    public Wrist(HardwareMap hardwareMap, String wristServoName, String handServoName){
+    public Wrist(HardwareMap hardwareMap, String wristServoName){
         this.wristServo = hardwareMap.get(Servo.class, wristServoName);
 
     }

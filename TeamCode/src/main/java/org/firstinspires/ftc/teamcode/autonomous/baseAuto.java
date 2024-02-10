@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Manipulator.ManipulatorConfiguration;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.modules.SpinTake;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.Hashtable;
+import java.util.List;
 
 public abstract class baseAuto extends LinearOpMode {
 
@@ -34,7 +36,14 @@ public abstract class baseAuto extends LinearOpMode {
 
     @Override
     public void runOpMode(){
-        this.drive = new SampleMecanumDrive(this.hardwareMap);
+        this.drive = new SampleMecanumDrive(this.hardwareMap, false);
+
+        List<LynxModule> allHubs = this.hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule module : allHubs){
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
+
         this.spinTake = new SpinTake(this.hardwareMap);
         this.finger = new Finger(this.hardwareMap);
         this.finger.down();
@@ -71,8 +80,15 @@ public abstract class baseAuto extends LinearOpMode {
                 double deltaTime = newTime - lastTime;
                 lastTime = newTime;
 
+                for (LynxModule module : allHubs){
+                    module.clearBulkCache();
+                }
+
                 this.tick(deltaTime);
                 this.drive.update();
+
+                telemetry.addData("Loop Rate", (1/deltaTime) + "Hz");
+                telemetry.update();
             }
         }
 

@@ -8,7 +8,7 @@ public class Hand {
     private Servo handServo;
     public Hand(HardwareMap hardwareMap, String servoName){
         this.handServo = hardwareMap.get(Servo.class, servoName);
-        this.handServo.scaleRange(0.5, 0.75);
+        this.handServo.scaleRange(0.5, 0.9);
         this.open();
     }
 
@@ -18,12 +18,12 @@ public class Hand {
 
     //opens hand
     public void open(){
-        this.handServo.setPosition(0.5);
+        this.handServo.setPosition(0.42916666);
     }
 
     //closes hand
     public void close(){
-        this.handServo.setPosition(0.95);
+        this.handServo.setPosition(0.806);
     }
 
 

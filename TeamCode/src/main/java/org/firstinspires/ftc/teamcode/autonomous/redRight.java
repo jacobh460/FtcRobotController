@@ -28,7 +28,7 @@ public class redRight extends redBaseAuto{
                         new Rect(640 - 280, 240, 280, 240),//right zone
                         new Rect(0, 240, 190, 190)//middle zone
                 },
-                20, 100, 100, 255, 255, 0.3
+                20, 100, 80, 255, 255, 0.3
         );
 
         this.visionPortal = new VisionPortal.Builder()
@@ -81,13 +81,13 @@ public class redRight extends redBaseAuto{
                     double ypos;
                     switch (this.visionProcessor.zone){
                         case 0:
-                            ypos = -44.0;
+                            ypos = -44.0;//right
                             break;
                         case 1:
-                            ypos = -37.0;
+                            ypos = -37.0;//middle
                             break;
                         default:
-                            ypos = -28.5;
+                            ypos = -30.5;//left
                             break;
                     }
 

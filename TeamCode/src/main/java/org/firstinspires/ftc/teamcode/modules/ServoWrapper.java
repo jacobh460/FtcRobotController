@@ -33,6 +33,7 @@ public class ServoWrapper {
     public void setAngle(double angle){
         double convertedAngle = (angle + this.zeroOffset) % (Math.PI * 2);
         if (convertedAngle < 0.0) convertedAngle += Math.PI * 2;
+        if (convertedAngle == this.targetAngle) return;
 
         double rawPosition = Math.min(Math.max(
                 convertedAngle/this.ROM * this.multiplier

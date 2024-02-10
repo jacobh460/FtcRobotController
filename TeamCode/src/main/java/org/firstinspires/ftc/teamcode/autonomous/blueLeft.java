@@ -30,7 +30,7 @@ public class blueLeft extends blueBaseAuto {
                         new Rect(0, 240, 280, 240),
                         new Rect(460, 240, 180, 190)
                 },
-                20, 100, 50, 255, 255, 0.3
+                20, 100, 40, 255, 255, 0.3
         );
 
         this.visionPortal = new VisionPortal.Builder()

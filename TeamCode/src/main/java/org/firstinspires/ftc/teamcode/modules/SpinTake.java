@@ -46,14 +46,14 @@ public class SpinTake {
     public DcMotor.RunMode getMode(){
         return this.intake.getMode();
     }
-    public void setVelocity(double rpm){
+    public void setRPM(double rpm){
         double tickVelo = rpm/60.0 * resolution;
         this.intake.setVelocity(tickVelo);
     }
 
-    public void runAtVelo(double rpm){
-        this.setVelocity(rpm);
-        this.intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    public void runAtRPM(double rpm){
+        if (this.intake.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) this.intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        this.setRPM(rpm);
     }
 
     public double getAngle(){
@@ -63,7 +63,7 @@ public class SpinTake {
     public void goToAngle(double angle, double velo){
         int ticks = (int)(angle/360.0 * this.resolution);
         this.intake.setTargetPosition(ticks);
-        this.setVelocity(velo);
+        this.setRPM(velo);
         this.intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 

@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.autonomous.vision.AutoVisionProcessor;
 import org.firstinspires.ftc.teamcode.modules.SpinTake;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.opencv.core.Rect;
 
@@ -39,7 +38,7 @@ public class blueRight extends blueBaseAuto {
                         new Rect(640 - 280, 240, 280, 240),//right zone
                         new Rect(10, 240, 180, 190)//middle zone
                 },
-                20, 100, 50, 255, 255, 0.3
+                20, 100, 40, 255, 255, 0.3
         );
 
         this.visionPortal = new VisionPortal.Builder()
@@ -73,7 +72,7 @@ public class blueRight extends blueBaseAuto {
                             if (this.settings.get("Truss") == "Middle"){
                                 //plow through middle spot
                                 this.spinTake.enable();
-                                this.spinTake.setVelocity(-500.0);
+                                this.spinTake.setRPM(-500.0);
                                 return drive.trajectorySequenceBuilder(new Pose2d(-43.00, 56.00, Math.toRadians(90.00)))
                                         .setReversed(true)
                                         .lineToSplineHeading(new Pose2d(-38.00, 17.0, Math.toRadians(270.0) + 1e-6))
@@ -96,6 +95,13 @@ public class blueRight extends blueBaseAuto {
                                     .build();
                     }
                 },
+                () -> {
+                    this.finger.up();
+                    return this.drive.trajectorySequenceBuilder(this.drive.getPoseEstimate())
+                            .lineToConstantHeading(new Vector2d(-38.5 -12.0, 61.75-12.0))
+                            .build();
+                }
+                /*,
                 () -> {
                     this.finger.up();
                     TrajectorySequenceBuilder builder = this.drive.trajectorySequenceBuilder(this.drive.getPoseEstimate());
@@ -174,6 +180,8 @@ public class blueRight extends blueBaseAuto {
 
                     return builder.build();
                 }
+
+                 */
         };
 
     }

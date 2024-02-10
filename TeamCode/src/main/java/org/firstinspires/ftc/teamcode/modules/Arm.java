@@ -21,9 +21,9 @@ public class Arm {
         leftServo.setPosition(rot);
         rightServo.setPosition(1.0-rot);
     }
-    public Arm(HardwareMap hardwareMap, String leftServoName, String rightServoName, String wristServoName, String handServoName){
+    public Arm(HardwareMap hardwareMap, String leftServoName, String rightServoName, String wristServoName){
         this.leftServo = hardwareMap.get(Servo.class, leftServoName);
         this.rightServo = hardwareMap.get(Servo.class, rightServoName);
-        this.wrist = new Wrist(hardwareMap, wristServoName, handServoName);
+        this.wrist = new Wrist(hardwareMap, wristServoName);
     }
 }

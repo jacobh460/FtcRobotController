@@ -12,10 +12,10 @@ public class ManipulatorController {
     public Hand hand;
 
     public static ManipulatorConfiguration[] presets = {
-            new ManipulatorConfiguration(Lift.minLength, Math.toRadians(8.645524), Math.toRadians(-97.42189)), //pickup
-            new ManipulatorConfiguration(Lift.minLength, Math.toRadians(67.7262597), Math.toRadians(-106.074689)), //transition between pickup and traveling
+            new ManipulatorConfiguration(Lift.minLength, Math.toRadians(4.778149), Math.toRadians(-96.65054)), //pickup
+            new ManipulatorConfiguration(Lift.minLength, Math.toRadians(67.7262597), Math.toRadians(-96.65054)), //transition between pickup and traveling
             new ManipulatorConfiguration(Lift.minLength, Math.toRadians(35.5306599), Math.toRadians(-35.0787366)), //traveling
-            new ManipulatorConfiguration(17.0, Math.toRadians(120.0), Math.toRadians(100.0)) //dropoff
+            new ManipulatorConfiguration(17.0, Math.toRadians(136.1411), Math.toRadians(87.41127)) //dropoff
     };
 
 
